@@ -30,7 +30,7 @@ class AgenteGrupo4 {
         let gridPosition = this.pixelToGrid(this.position);
         this.calculatedPath = Array();
 
-        this.dfs(gridPosition, terrain);
+        this.bfs(gridPosition, terrain);
       
         // switch(algorithmToRun) {
         //   case 0:
@@ -50,9 +50,11 @@ class AgenteGrupo4 {
         //     break;
         // }
      
+      // console.log(this.position);
       // console.log(this.calculatedPath); 
       // console.log(this.calculatedPath[this.calculatedPath.length - 1]);
       // console.log(this.closestFood);
+      // this.display();
       // exit(-1);
     }
     
@@ -113,28 +115,34 @@ class AgenteGrupo4 {
       for(let i = 0; i < 8; i++){
         let new_x = currPosition.x + this.dx[i];
         let new_y = currPosition.y + this.dy[i];
-        if(visited[new_x][new_y] === 0 && terrain.board[new_x][new_y] !== OBSTACLE && new_x >= 0 && new_x < terrain.rows && new_y >= 0 && new_y < terrain.columns){
-          visited[new_x][new_y] = 1;
-          ancestor[new_x][new_y] = currPosition;
-          queue.push(createVector(new_x, new_y));
+        if(new_x >= 0 && new_x < terrain.columns && new_y >= 0 && new_y < terrain.rows) {
+          if(visited[new_x][new_y] === 0 && terrain.board[new_x][new_y] !== OBSTACLE){
+            visited[new_x][new_y] = 1;
+            ancestor[new_x][new_y] = currPosition;
+            queue.push(createVector(new_x, new_y));
+          }
         }
       }
     }
-
+    
     let initialPosition = this.pixelToGrid(this.closestFood);
 
-    while(initialPosition.x !== ancestor[initialPosition.x][initialPosition.y].x && initialPosition.y !== ancestor[initialPosition.x][initialPosition.y].y){
+    while(!initialPosition.equals(ancestor[initialPosition.x][initialPosition.y])) {
       this.calculatedPath.push(this.gridToPixel(initialPosition));
       initialPosition = createVector(ancestor[initialPosition.x][initialPosition.y].x, ancestor[initialPosition.x][initialPosition.y].y);
     }
     this.calculatedPath.push(this.gridToPixel(initialPosition));
 
+    this.calculatedPath = reverse(this.calculatedPath);
   }
 
   bfs(gridPosition, terrain) {
     let visited = new Array(terrain.columns);
-    for (let i = 0; i < terrain.columns; i++) {
+    for(let i = 0; i < terrain.columns; i++){
       visited[i] = new Array(terrain.rows);
+      for(let j = 0; j < terrain.rows; j++){
+        visited[i][j] = 0;
+      }
     }
     let ancestor = new Array(terrain.columns);
     for (let i = 0; i < terrain.columns; i++) {
@@ -145,6 +153,7 @@ class AgenteGrupo4 {
         ancestor[i][j] = createVector(i,j);
       }
     }
+    
     this.bfsAux(gridPosition, terrain, visited, ancestor);
   }
   
