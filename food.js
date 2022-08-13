@@ -11,7 +11,7 @@ class Food {
     // Start with some food
     this.food = [];
     for (let i = 0; i < num; i++) {
-      this.food.push(createVector(random(width), random(height)));
+      this.food.push(createVector(floor(random(0, floor(width / GRID_SIZE))) * GRID_SIZE, floor(random(0, floor(height / GRID_SIZE))) * GRID_SIZE));
     }
   }
 
@@ -27,12 +27,12 @@ class Food {
       //rectMode(CENTER);
       stroke(0);
       fill(127);
-      rect(f.x, f.y, 8, 8);
+      rect(f.x, f.y, GRID_SIZE, GRID_SIZE);
     }
 
     // There's a small chance food will appear randomly
-    if (random(1) < 0.001) {
-      this.food.push(createVector(random(width), random(height)));
+    if (random(1) < 0.01) {
+      this.food.push(createVector(floor(random(0, floor(width / GRID_SIZE))) * GRID_SIZE, floor(random(0, floor(height / GRID_SIZE))) * GRID_SIZE));
     }
   }
 
