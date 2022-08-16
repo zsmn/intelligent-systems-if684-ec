@@ -129,6 +129,9 @@ class AgenteGrupo4 {
 
     while(queue.length != 0){
       let currPosition = queue.shift();
+      if(currPosition.equals(this.pixelToGrid(this.closestFood))) {
+        break;
+      }
       for(let i = 0; i < 8; i++){
         let new_x = currPosition.x + this.dx[i];
         let new_y = currPosition.y + this.dy[i];
