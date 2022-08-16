@@ -1,4 +1,5 @@
-let previous;
+//let previous;
+
 
 class AgenteGrupo4 {
   constructor(position) {
@@ -9,6 +10,7 @@ class AgenteGrupo4 {
     this.pathAlgorithm = 0;
     this.dx = [1,-1,0, 0, 1, 1,-1,-1];
     this.dy = [0, 0,1,-1, 1,-1, 1,-1];
+    this.terrainEnergy=0;
   }
   
   agentPixelToGrid(position) {
@@ -25,12 +27,16 @@ class AgenteGrupo4 {
 
   run(terrain) {
     if(this.closestFood != undefined && (!this.closestFood.equals(this.calculatedPath[this.calculatedPath.length - 1]))) {
+        
         let algorithmToRun = this.pathAlgorithm % 5;
         this.pathAlgorithm += 1;
         let gridPosition = this.pixelToGrid(this.position);
+        this.terrainEnergy = (10*terrain.board[gridPosition.x][gridPosition.y])+5;
+        console.log(this.terrainEnergy);
+        
         this.calculatedPath = Array();
 
-        this.bfs(gridPosition, terrain);
+        this.dfs(gridPosition, terrain);
       
         // switch(algorithmToRun) {
         //   case 0:
@@ -58,8 +64,19 @@ class AgenteGrupo4 {
       // exit(-1);
     }
     
-    this.update();
+    
+    if(this.terrainEnergy <=0){
+      let actualPosition = this.pixelToGrid(this.position);
+      this.terrainEnergy = (10*terrain.board[actualPosition.x][actualPosition.y]) + 5;
+      console.log(this.terrainEnergy);
+      
+      this.update();
+    }
+    this.terrainEnergy -=1;
     this.display();
+    
+    
+    
   }
 
   
@@ -239,4 +256,3 @@ class AgenteGrupo4 {
     rect(this.position.x, this.position.y, GRID_SIZE, GRID_SIZE);
   }
 }
-
