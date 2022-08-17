@@ -8,24 +8,25 @@ class Heap{
   fsort(a, b) {
     return a[1] > b[1];
   }
-
-  parent(i) { return (i-1)/2; }
   
-  left(i) { return (2*i + 1); }
   
-  right(i) { return (2*i + 2); }
+  parent(i) { return Math.floor((i-1)/2); }
+  
+  left(i) { return Math.floor((2*i + 1)); }
+  
+  right(i) { return Math.floor((2*i + 2)); }
 
   heapify(i) {
-    let l = left(i);
-    let r = right(i);
+    let l = this.left(i);
+    let r = this.right(i);
     let smallest = i;
     if (l < this.list.length && this.list[l][1] < this.list[i][1])
         smallest = l;
     if (r < this.list.length && this.list[r][1] < this.list[smallest][1])
         smallest = r;
     if (smallest != i) {
-        swap(this.list[i], this.list[smallest]);
-        heapify(smallest);
+      [this.list[i], this.list[smallest]] = [this.list[smallest], this.list[i]];
+        this.heapify(smallest);
     }
   }
 
@@ -37,7 +38,7 @@ class Heap{
     let root = this.list[0];
     this.list[0] = this.list[this.list.length-1];
     this.list.pop();
-    heapify(0);
+    this.heapify(0);
   
     return root;
     
@@ -46,10 +47,13 @@ class Heap{
 
     this.list.push(a);
     let i = this.list.length - 1;
+    let p = this.parent(i);
+    console.log(p);
   
-    while (i !== 0 && this.list[parent(i)][1] > this.list[i][1]) {
-       swap(this.list[i], this.list[parent(i)]);
-       i = parent(i);
+    while (i !== 0 && this.list[p][1] > this.list[i][1]) {
+      
+      [this.list[i], this.list[p]] = [this.list[p], this.list[i]];
+       i = this.parent(i);
     }
 
   }
