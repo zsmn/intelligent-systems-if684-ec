@@ -1,25 +1,37 @@
-// Adapted from https://github.com/vcnovaes/SearchAlgorithmsAnimation
 
-const WATER = 0;
-const SAND = 1;
-const MUD = 2;
+const SAND = 0;
+const MUD = 1;
+const WATER = 2;
 const OBSTACLE = 3;
 const PLAYER = 4;
 const FOOD = 5;
+const EXPLORATION = 6;
+const PATH = 7;
 
-const color = new Array(6);
-color[SAND] = [230, 197, 37];
-color[MUD] = [92, 51, 18];
-color[WATER] = [95, 116, 222];
-color[OBSTACLE] = [121, 114, 125];
-color[PLAYER] = [84, 191, 113];
-color[FOOD] = [191, 84, 130];
+const color = new Array(8);
+color[SAND] = [230, 197, 37, 255];
+color[MUD] = [92, 51, 18, 255];
+color[WATER] = [95, 116, 222, 255];
+color[OBSTACLE] = [121, 114, 125, 255];
+color[PLAYER] = [84, 191, 113, 255];
+color[FOOD] = [191, 84, 130, 255];
+color[EXPLORATION] = [0, 0, 255, 60];
+color[PATH] = [255, 0, 0, 60];
 
 class Terrain {
   constructor() {
     this.columns = floor(width / GRID_SIZE);
     this.rows = floor(height / GRID_SIZE);
     this.board = new Array(this.columns);
+    this.boardEffects = new Array(this.columns);
+    this.maxIndexToDrawExploration = 0;
+    this.maxIndexToDrawPath = 0;
+    this.counter = 0;
+    this.drawCounter = 1;
+    this.explorationPath = [];
+    this.drawedExploration = false;
+    this.path = [];
+    this.drawedPath = false;
     for (let i = 0; i < this.columns; i++) {
       this.board[i] = new Array(this.rows);
     }
@@ -30,6 +42,83 @@ class Terrain {
       for (let j = 0; j < this.rows; j++) {
         this.draw_ij(i, j);
       }
+    }
+    
+    this.draw_exploration();
+    if(this.drawedExploration) {
+      this.draw_path();
+    }
+  }
+  
+  set_exploration(exploration_path) {
+    this.explorationPath = exploration_path;
+    this.drawedExploration = false;
+  }
+  
+  set_path(path) {
+    this.path = path;
+    this.drawedPath = false;
+  }
+  
+  draw_exploration() {
+    if(this.explorationPath.length) {
+      for(let i = 0; i <= this.maxIndexToDrawExploration; i++) {
+          let pointToDraw = this.explorationPath[i];
+
+          rectMode(CORNER);
+          let c = color[EXPLORATION];
+          fill(c[0], c[1], c[2]);
+          stroke(127,127,127,127);
+          strokeWeight(0.5);
+          rect(pointToDraw.x * GRID_SIZE, pointToDraw.y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+          fill(0);
+        }
+    }
+    
+    if(this.drawedExploration == false) {
+      if(this.counter >= this.drawCounter) {
+        this.maxIndexToDrawExploration += 1;
+        this.counter = 0;
+
+        if(this.maxIndexToDrawExploration == this.explorationPath.length - 1) {
+          this.drawedExploration = true;
+        }
+      }
+      else {
+        this.counter += 1;
+      }
+    }
+  }
+  
+  draw_path() {
+    if(this.path.length) {
+      for(let i = 0; i <= this.maxIndexToDrawPath; i++) {
+          let pointToDraw = this.path[i];
+
+          rectMode(CORNER);
+          let c = color[PATH];
+          fill(c[0], c[1], c[2]);
+          stroke(127,127,127,127);
+          strokeWeight(0.5);
+          rect(pointToDraw.x * GRID_SIZE, pointToDraw.y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+          fill(0);
+        }
+    }
+    
+    if(this.drawedPath == false && this.counter >= this.drawCounter) {
+      this.maxIndexToDrawPath += 1;
+      this.counter = 0;
+      
+      if(this.maxIndexToDrawPath == this.path.length - 1) {
+        this.drawedPath = true;
+        this.maxIndexToDrawExploration = 0;
+        this.maxIndexToDrawPath = 0;
+        this.path = Array();
+        this.explorationPath = Array();
+      }
+    }
+    else {
+      this.counter += 1;
     }
   }
 
@@ -62,4 +151,3 @@ class Terrain {
     }
   }
 }
-
