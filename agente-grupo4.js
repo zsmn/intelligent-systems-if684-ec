@@ -48,7 +48,7 @@ class Heap{
     this.list.push(a);
     let i = this.list.length - 1;
     let p = this.parent(i);
-    console.log(p);
+    //console.log(p);
   
     while (i !== 0 && this.list[p][1] > this.list[i][1]) {
       
@@ -67,6 +67,7 @@ class AgenteGrupo4 {
   constructor(position) {
     this.position = createVector(position.x * GRID_SIZE, position.y * GRID_SIZE);
 
+    this.explorationPath = Array();
     this.calculatedPath = Array();
     this.closestFood = undefined;
     this.pathAlgorithm = 0;
@@ -98,27 +99,26 @@ class AgenteGrupo4 {
         this.terrainEnergy = (10*terrain.board[gridPosition.x][gridPosition.y])+5;
         //console.log(this.terrainEnergy);
         
+        this.explorationPath = Array();
         this.calculatedPath = Array();
-
-        this.astar(gridPosition, terrain);
       
-        // switch(algorithmToRun) {
-        //   case 0:
-        //     this.dfs(gridPosition, terrain);
-        //     break;
-        //   case 1:
-        //     this.bfs(gridPosition, terrain);
-        //     break;
-        //   case 2:
-        //     this.greed(terrain);
-        //     break;
-        //   case 3:
-        //     this.astar(terrain);
-        //     break;
-        //   case 4:
-        //     this.uniform(terrain);
-        //     break;
-        // }
+        switch(algorithmToRun) {
+          case 0:
+            this.dfs(gridPosition, terrain);
+            break;
+          case 1:
+            this.bfs(gridPosition, terrain);
+            break;
+          case 2:
+            this.astar(gridPosition, terrain);
+            break;
+          case 3:
+            this.greed(gridPosition, terrain);
+            break;
+          case 4:
+            this.uniform(gridPosition, terrain);
+            break;
+        }
      
       // console.log(this.position);
       // console.log(this.calculatedPath); 
@@ -127,22 +127,30 @@ class AgenteGrupo4 {
       // this.display();
       // exit(-1);
       
+      terrain.set_exploration(this.explorationPath);
+      
+      let calculatedPathAsGrid = Array();
+      for(let i = 0; i < this.calculatedPath.length; i++) {
+        calculatedPathAsGrid.push(this.pixelToGrid(this.calculatedPath[i]));
+      }
+      terrain.set_path(calculatedPathAsGrid);
       
     }
     
     
-    if(this.terrainEnergy <=0){
-      let actualPosition = this.pixelToGrid(this.position);
-      this.terrainEnergy = (10*terrain.board[actualPosition.x][actualPosition.y]) + 5;
-      //console.log(this.terrainEnergy);
-      
-      this.update();
+    if(terrain.drawedPath) {
+      if(this.terrainEnergy <= 0){
+        let actualPosition = this.pixelToGrid(this.position);
+        this.terrainEnergy = (10*terrain.board[actualPosition.x][actualPosition.y]) + 5;
+        //console.log(this.terrainEnergy);
+
+        this.update();
+      }
+      this.terrainEnergy -=1;
     }
-    this.terrainEnergy -=1;
+    
     this.display();
-    
-    
-    
+
   }
 
   
@@ -160,6 +168,7 @@ class AgenteGrupo4 {
       let new_y = gridPosition.y + this.dy[i];
       if(new_x >= 0 && new_x < terrain.columns && new_y >= 0 && new_y < terrain.rows) {
         if(visited[new_x][new_y] === 0 && terrain.board[new_x][new_y] !== OBSTACLE){
+          this.explorationPath.push(gridPosition);
           this.dfsAux(createVector(new_x, new_y), terrain, visited, found);
           if(found[0] == true) {
             return ;
@@ -203,6 +212,7 @@ class AgenteGrupo4 {
         let new_y = currPosition.y + this.dy[i];
         if(new_x >= 0 && new_x < terrain.columns && new_y >= 0 && new_y < terrain.rows) {
           if(visited[new_x][new_y] === 0 && terrain.board[new_x][new_y] !== OBSTACLE){
+            this.explorationPath.push(currPosition);
             visited[new_x][new_y] = 1;
             ancestor[new_x][new_y] = currPosition;
             queue.push(createVector(new_x, new_y));
@@ -243,7 +253,7 @@ class AgenteGrupo4 {
     this.bfsAux(gridPosition, terrain, visited, ancestor);
   }
   
-  greed(terrain) {
+  greed(gridPosition, terrain) {
     
   }
   
@@ -259,6 +269,7 @@ class AgenteGrupo4 {
       let currPosition;
       let cost;
       [currPosition, cost] = pq.pop();
+      this.explorationPath.push(currPosition);
         
       for(let i = 0; i < 8; i++){
         let new_x = currPosition.x + this.dx[i];
@@ -311,7 +322,7 @@ class AgenteGrupo4 {
     this.astarAux(gridPosition, terrain, dist, ancestor);
   }
   
-  uniform(terrain) {
+  uniform(gridPosition, terrain) {
     
   }
   
