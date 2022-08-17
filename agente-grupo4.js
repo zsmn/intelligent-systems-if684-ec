@@ -8,12 +8,50 @@ class Heap{
   fsort(a, b) {
     return a[1] > b[1];
   }
+
+  parent(i) { return (i-1)/2; }
+  
+  left(i) { return (2*i + 1); }
+  
+  right(i) { return (2*i + 2); }
+
+  heapify(i) {
+    let l = left(i);
+    let r = right(i);
+    let smallest = i;
+    if (l < this.list.length && this.list[l][1] < this.list[i][1])
+        smallest = l;
+    if (r < this.list.length && this.list[r][1] < this.list[smallest][1])
+        smallest = r;
+    if (smallest != i) {
+        swap(this.list[i], this.list[smallest]);
+        heapify(smallest);
+    }
+  }
+
   pop() {
-    this.list.sort(this.fsort);
-    return this.list.pop();
+    if (this.list.length == 1) {
+      return this.list.pop()
+    }
+
+    let root = this.list[0];
+    this.list[0] = this.list[this.list.length-1];
+    this.list.pop();
+    heapify(0);
+  
+    return root;
+    
   }
   push(a) {
+
     this.list.push(a);
+    let i = this.list.length - 1;
+  
+    while (i !== 0 && this.list[parent(i)][1] > this.list[i][1]) {
+       swap(this.list[i], this.list[parent(i)]);
+       i = parent(i);
+    }
+
   }
   empty() {
     return this.list.length === 0;
