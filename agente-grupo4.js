@@ -1,8 +1,10 @@
 //let previous;
 
-class Heap{
+  class Heap{
   constructor() {
-    //list = [ [Vector(i, j), cost] ]
+    //list = [ [Vector(i, j), cost] ] //UNIFORM
+    //list = [ [Vector(i, j), heur] ] //GREEDY
+    //list = [ [Vector(i, j), cost + heur] ] //A*
     this.list = Array(0);
   }
   fsort(a, b) {
@@ -104,19 +106,25 @@ class AgenteGrupo4 {
       
         switch(algorithmToRun) {
           case 0:
+            //const initialPosition = this.pixelToGrid(this.closestFood);
             this.dfs(gridPosition, terrain);
+            console.log("DFS");
             break;
           case 1:
             this.bfs(gridPosition, terrain);
+            console.log("BFS");
             break;
           case 2:
             this.astar(gridPosition, terrain);
+            console.log("A*");
             break;
           case 3:
             this.greed(gridPosition, terrain);
+            console.log("GREEDY");
             break;
           case 4:
             this.uniform(gridPosition, terrain);
+            console.log("B_UNIFORM");
             break;
         }
      
@@ -157,8 +165,8 @@ class AgenteGrupo4 {
   dfsAux(gridPosition, terrain, visited, found){
     visited[gridPosition.x][gridPosition.y] = 1;
     this.calculatedPath.push(this.gridToPixel(gridPosition));
-    
-    if(gridPosition.equals(this.pixelToGrid(this.closestFood))) {
+    let initialPosition = this.pixelToGrid(this.closestFood);
+    if(gridPosition.equals(initialPosition)) {
       found[0] = true;
       return ;
     }
@@ -170,14 +178,14 @@ class AgenteGrupo4 {
         if(visited[new_x][new_y] === 0 && terrain.board[new_x][new_y] !== OBSTACLE){
           this.explorationPath.push(gridPosition);
           this.dfsAux(createVector(new_x, new_y), terrain, visited, found);
-          if(found[0] == true) {
+          if(found[0] === true) {
             return ;
           }
         }
       }
     }
 
-    if(found[0] == false) {
+    if(found[0] === false) {
       this.calculatedPath.pop();
     }
   }
@@ -198,15 +206,12 @@ class AgenteGrupo4 {
   
   bfsAux(gridPosition, terrain, visited, ancestor){
     visited[gridPosition.x][gridPosition.y] = 1;
-
+    let found = false;
     let queue = Array();
     queue.push(gridPosition);
 
     while(queue.length != 0){
       let currPosition = queue.shift();
-      if(currPosition.equals(this.pixelToGrid(this.closestFood))) {
-        break;
-      }
       for(let i = 0; i < 8; i++){
         let new_x = currPosition.x + this.dx[i];
         let new_y = currPosition.y + this.dy[i];
@@ -216,8 +221,15 @@ class AgenteGrupo4 {
             visited[new_x][new_y] = 1;
             ancestor[new_x][new_y] = currPosition;
             queue.push(createVector(new_x, new_y));
+            if(currPosition.equals(this.pixelToGrid(this.closestFood))) {
+              found = true;
+              break;
+            }
           }
         }
+      }
+      if(found === true){
+        break;
       }
     }
     
@@ -253,34 +265,33 @@ class AgenteGrupo4 {
     this.bfsAux(gridPosition, terrain, visited, ancestor);
   }
   
-  greed(gridPosition, terrain) {
-    
-  }
-  
-
-  astarAux(gridPosition, terrain, dist, ancestor){
+  greedAux(gridPosition, terrain, dist, ancestor){
     dist[gridPosition.x][gridPosition.y] = 0;
 
     let pq = new Heap();
-
-    pq.push([gridPosition, 0]);
+    let initialPosition = this.pixelToGrid(this.closestFood);
+    
+    pq.push([gridPosition, abs(gridPosition.x-initialPosition.x) + abs(gridPosition.y-initialPosition.y)]);
 
     while(!pq.empty()){
       let currPosition;
-      let cost;
-      [currPosition, cost] = pq.pop();
+      let h; // heuristic
+      [currPosition, h] = pq.pop();
+      if(currPosition.x === initialPosition.x && currPosition.y === initialPosition.y) break;
+
       this.explorationPath.push(currPosition);
         
       for(let i = 0; i < 8; i++){
         let new_x = currPosition.x + this.dx[i];
         let new_y = currPosition.y + this.dy[i];
-        let c = 0;
-        if(this.dx[i] !== 0 && this.dy[i] !== 0) c = 1;
+        // let c = 0;
+        h = abs(new_x-initialPosition.x) + abs(new_y-initialPosition.y);
+        // if(this.dx[i] !== 0 && this.dy[i] !== 0) c = 1;
 
         if(!(new_x >= 0 && new_x < terrain.columns && new_y >= 0 && new_y < terrain.rows)) continue;
         if(terrain.board[new_x][new_y] === OBSTACLE) continue;
         
-        let newDist = cost + c + 1 + terrain.board[new_x][new_y];
+        let newDist = h; // f(n) = h(n)
         if(dist[new_x][new_y] === -1 || newDist < dist[new_x][new_y]) {
           dist[new_x][new_y] = newDist;
           ancestor[new_x][new_y] = currPosition;
@@ -290,7 +301,78 @@ class AgenteGrupo4 {
       }
     }
     
+    // let initialPosition = this.pixelToGrid(this.closestFood);
+
+    while(!initialPosition.equals(ancestor[initialPosition.x][initialPosition.y])) {
+      this.calculatedPath.push(this.gridToPixel(initialPosition));
+      
+      initialPosition = createVector(ancestor[initialPosition.x][initialPosition.y].x, ancestor[initialPosition.x][initialPosition.y].y);
+    }
+    this.calculatedPath.push(this.gridToPixel(initialPosition));
+
+    this.calculatedPath = reverse(this.calculatedPath);
+  }
+
+  greed(gridPosition, terrain) {
+    let dist = new Array(terrain.columns);
+    for(let i = 0; i < terrain.columns; i++){
+      dist[i] = new Array(terrain.rows);
+      for(let j = 0; j < terrain.rows; j++){
+        dist[i][j] = -1;
+      }
+    }
+    let ancestor = new Array(terrain.columns);
+    for (let i = 0; i < terrain.columns; i++) {
+      ancestor[i] = new Array(terrain.rows);
+    }
+    for(let i = 0; i < terrain.columns; i++){
+      for(let j = 0; j < terrain.rows; j++){
+        ancestor[i][j] = createVector(i,j);
+      }
+    }
+    this.greedAux(gridPosition, terrain, dist, ancestor);
+  }
+  
+
+  astarAux(gridPosition, terrain, dist, ancestor){
+    dist[gridPosition.x][gridPosition.y] = 0;
+
+    let pq = new Heap();
     let initialPosition = this.pixelToGrid(this.closestFood);
+    
+    pq.push([gridPosition, 0 + abs(gridPosition.x-initialPosition.x) + abs(gridPosition.y-initialPosition.y)]);
+
+    while(!pq.empty()){
+      let currPosition;
+      let Fn; // f(n_antecessor)
+      let cost // g(n_antecessor) = f(n_antecessor) - h(n_antecessor)
+      [currPosition, Fn] = pq.pop();
+      if(currPosition.x === initialPosition.x && currPosition.y === initialPosition.y) break;
+
+      cost  = Fn - (abs(currPosition.x-initialPosition.x) + abs(currPosition.y-initialPosition.y))
+      this.explorationPath.push(currPosition);
+        
+      for(let i = 0; i < 8; i++){
+        let new_x = currPosition.x + this.dx[i];
+        let new_y = currPosition.y + this.dy[i];
+        let c = 0;
+        let h = abs(new_x-initialPosition.x) + abs(new_y-initialPosition.y); // heuristic
+        if(this.dx[i] !== 0 && this.dy[i] !== 0) c = 1;
+
+        if(!(new_x >= 0 && new_x < terrain.columns && new_y >= 0 && new_y < terrain.rows)) continue;
+        if(terrain.board[new_x][new_y] === OBSTACLE) continue;
+        
+        let newDist = cost + c + 1 + terrain.board[new_x][new_y] + h; // f(n) = g(n) + h(n)
+        if(dist[new_x][new_y] === -1 || newDist < dist[new_x][new_y]) {
+          dist[new_x][new_y] = newDist;
+          ancestor[new_x][new_y] = currPosition;
+          pq.push([createVector(new_x, new_y), newDist]);
+        }
+          
+      }
+    }
+    
+    // let initialPosition = this.pixelToGrid(this.closestFood);
 
     while(!initialPosition.equals(ancestor[initialPosition.x][initialPosition.y])) {
       this.calculatedPath.push(this.gridToPixel(initialPosition));
@@ -322,8 +404,69 @@ class AgenteGrupo4 {
     this.astarAux(gridPosition, terrain, dist, ancestor);
   }
   
+  uniformAux(gridPosition, terrain, dist, ancestor){
+    dist[gridPosition.x][gridPosition.y] = 0;
+
+    let pq = new Heap();
+    let initialPosition = this.pixelToGrid(this.closestFood);
+
+    pq.push([gridPosition, 0]);
+
+    while(!pq.empty()){
+      let currPosition;
+      let cost; // g(n_antecessor)
+      [currPosition, cost] = pq.pop();
+      if(currPosition.x === initialPosition.x && currPosition.y === initialPosition.y) break;
+
+      this.explorationPath.push(currPosition);
+        
+      for(let i = 0; i < 8; i++){
+        let new_x = currPosition.x + this.dx[i];
+        let new_y = currPosition.y + this.dy[i];
+        let c = 0;
+        if(this.dx[i] !== 0 && this.dy[i] !== 0) c = 1;
+
+        if(!(new_x >= 0 && new_x < terrain.columns && new_y >= 0 && new_y < terrain.rows)) continue;
+        if(terrain.board[new_x][new_y] === OBSTACLE) continue;
+        
+        let newDist = cost + c + 1 + terrain.board[new_x][new_y]; // f(n) = g(n)
+        if(dist[new_x][new_y] === -1 || newDist < dist[new_x][new_y]) {
+          dist[new_x][new_y] = newDist;
+          ancestor[new_x][new_y] = currPosition;
+          pq.push([createVector(new_x, new_y), newDist]);
+        }
+          
+      }
+    }
+
+    while(!initialPosition.equals(ancestor[initialPosition.x][initialPosition.y])) {
+      this.calculatedPath.push(this.gridToPixel(initialPosition));
+      
+      initialPosition = createVector(ancestor[initialPosition.x][initialPosition.y].x, ancestor[initialPosition.x][initialPosition.y].y);
+    }
+    this.calculatedPath.push(this.gridToPixel(initialPosition));
+
+    this.calculatedPath = reverse(this.calculatedPath);
+  }
+
   uniform(gridPosition, terrain) {
-    
+    let dist = new Array(terrain.columns);
+    for(let i = 0; i < terrain.columns; i++){
+      dist[i] = new Array(terrain.rows);
+      for(let j = 0; j < terrain.rows; j++){
+        dist[i][j] = -1;
+      }
+    }
+    let ancestor = new Array(terrain.columns);
+    for (let i = 0; i < terrain.columns; i++) {
+      ancestor[i] = new Array(terrain.rows);
+    }
+    for(let i = 0; i < terrain.columns; i++){
+      for(let j = 0; j < terrain.rows; j++){
+        ancestor[i][j] = createVector(i,j);
+      }
+    }
+    this.uniformAux(gridPosition, terrain, dist, ancestor);
   }
   
   checkIfFoodExists(food) {
