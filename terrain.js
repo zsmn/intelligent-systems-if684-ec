@@ -53,21 +53,31 @@ class Terrain {
   set_exploration(exploration_path) {
     this.explorationPath = exploration_path;
     this.drawedExploration = false;
+    this.maxIndexToDrawExploration = 0;
   }
   
   set_path(path) {
     this.path = path;
     this.drawedPath = false;
+    this.maxIndexToDrawPath = 0;
   }
   
   draw_exploration() {
     if(this.explorationPath.length) {
-      for(let i = 0; i <= this.maxIndexToDrawExploration; i++) {
+      for(let i = 0; i <= min(this.explorationPath.length - 1, this.maxIndexToDrawExploration); i++) {
           let pointToDraw = this.explorationPath[i];
+        
+//           if(pointToDraw == undefined) {
+//             console.log(this.explorationPath);
+//             console.log(this.explorationPath.length);
+//             console.log(i);
+//             console.log("resolvi porra");
+//             continue;
+//           }
 
           rectMode(CORNER);
           let c = color[EXPLORATION];
-          fill(c[0], c[1], c[2]);
+          fill(c[0], c[1], c[2], c[3]);
           stroke(127,127,127,127);
           strokeWeight(0.5);
           rect(pointToDraw.x * GRID_SIZE, pointToDraw.y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
@@ -97,7 +107,7 @@ class Terrain {
 
           rectMode(CORNER);
           let c = color[PATH];
-          fill(c[0], c[1], c[2]);
+          fill(c[0], c[1], c[2], c[3]);
           stroke(127,127,127,127);
           strokeWeight(0.5);
           rect(pointToDraw.x * GRID_SIZE, pointToDraw.y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
@@ -111,10 +121,6 @@ class Terrain {
       
       if(this.maxIndexToDrawPath == this.path.length - 1) {
         this.drawedPath = true;
-        this.maxIndexToDrawExploration = 0;
-        this.maxIndexToDrawPath = 0;
-        this.path = Array();
-        this.explorationPath = Array();
       }
     }
     else {
@@ -125,7 +131,7 @@ class Terrain {
   draw_ij(i, j) {
     rectMode(CORNER);
     let c = color[this.board[i][j]];
-    fill(c[0], c[1], c[2]);
+    fill(c[0], c[1], c[2], c[3]);
     stroke(127,127,127,127);
     strokeWeight(0.5);
     rect(i * GRID_SIZE, j * GRID_SIZE, GRID_SIZE, GRID_SIZE);
