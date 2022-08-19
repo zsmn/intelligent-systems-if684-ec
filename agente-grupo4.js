@@ -76,6 +76,7 @@ class AgenteGrupo4 {
     this.dx = [1,-1,0, 0, 1, 1,-1,-1];
     this.dy = [0, 0,1,-1, 1,-1, 1,-1];
     this.terrainEnergy=0;
+    this.score = 0;
 
     
   }
@@ -496,9 +497,11 @@ class AgenteGrupo4 {
       let foodLocation = food[i];
       let d = p5.Vector.dist(this.position, foodLocation);
       // If we are, juice up our strength!
-      if (d < GRID_SIZE/2) {
+      if (d < GRID_SIZE) {
         this.health += 100;
         food.splice(i, 1);
+        this.score += 1;
+        console.log("Agent Grupo 4 score: " + this.score);
       }
     }
     
