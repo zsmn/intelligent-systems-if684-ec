@@ -12,7 +12,7 @@ const color = new Array(8);
 color[SAND] = [230, 197, 37, 255];
 color[MUD] = [92, 51, 18, 255];
 color[WATER] = [95, 116, 222, 255];
-color[OBSTACLE] = [121, 114, 125, 255];
+color[OBSTACLE] = [0, 0, 0, 255];
 color[PLAYER] = [84, 191, 113, 255];
 color[FOOD] = [191, 84, 130, 255];
 color[EXPLORATION] = [0, 0, 255, 60];
@@ -145,7 +145,7 @@ class Terrain {
     for (let i = 0; i < this.columns; i++) {
       for (let j = 0; j < this.rows; j++) {
         let noise_val = noise(i / noise_scale, j / noise_scale, iterations);
-
+        const chanceObstacle = random();
         if (noise_val < 0.3) {
           this.board[i][j] = WATER;
         } else if (noise_val < 0.4) {
@@ -153,7 +153,12 @@ class Terrain {
         } else {
           this.board[i][j] = SAND;
         }
+        
+        if(chanceObstacle < 0.1){
+          this.board[i][j] = OBSTACLE;
+        }
       }
     }
+    
   }
 }
