@@ -176,7 +176,7 @@ class AgenteGrupo4 {
       let new_y = gridPosition.y + this.dy[i];
       if(new_x >= 0 && new_x < terrain.columns && new_y >= 0 && new_y < terrain.rows) {
         if(visited[new_x][new_y] === 0 && terrain.board[new_x][new_y] !== OBSTACLE){
-          this.explorationPath.push(gridPosition);
+          this.explorationPath.push(createVector(new_x, new_y));
           this.dfsAux(createVector(new_x, new_y), terrain, visited, found);
           if(found[0] === true) {
             return ;
@@ -217,7 +217,7 @@ class AgenteGrupo4 {
         let new_y = currPosition.y + this.dy[i];
         if(new_x >= 0 && new_x < terrain.columns && new_y >= 0 && new_y < terrain.rows) {
           if(visited[new_x][new_y] === 0 && terrain.board[new_x][new_y] !== OBSTACLE){
-            this.explorationPath.push(currPosition);
+            this.explorationPath.push(createVector(new_x, new_y));
             visited[new_x][new_y] = 1;
             ancestor[new_x][new_y] = currPosition;
             queue.push(createVector(new_x, new_y));
@@ -277,9 +277,10 @@ class AgenteGrupo4 {
       let currPosition;
       let h; // heuristic
       [currPosition, h] = pq.pop();
-      if(currPosition.x === initialPosition.x && currPosition.y === initialPosition.y) break;
-
+      
       this.explorationPath.push(currPosition);
+      
+      if(currPosition.x === initialPosition.x && currPosition.y === initialPosition.y) break;
         
       for(let i = 0; i < 8; i++){
         let new_x = currPosition.x + this.dx[i];
@@ -347,10 +348,12 @@ class AgenteGrupo4 {
       let Fn; // f(n_antecessor)
       let cost // g(n_antecessor) = f(n_antecessor) - h(n_antecessor)
       [currPosition, Fn] = pq.pop();
+      
+      this.explorationPath.push(currPosition);
+      
       if(currPosition.x === initialPosition.x && currPosition.y === initialPosition.y) break;
 
       cost  = Fn - (abs(currPosition.x-initialPosition.x) + abs(currPosition.y-initialPosition.y))
-      this.explorationPath.push(currPosition);
         
       for(let i = 0; i < 8; i++){
         let new_x = currPosition.x + this.dx[i];
@@ -416,9 +419,11 @@ class AgenteGrupo4 {
       let currPosition;
       let cost; // g(n_antecessor)
       [currPosition, cost] = pq.pop();
+      
+      this.explorationPath.push(currPosition);
+      
       if(currPosition.x === initialPosition.x && currPosition.y === initialPosition.y) break;
 
-      this.explorationPath.push(currPosition);
         
       for(let i = 0; i < 8; i++){
         let new_x = currPosition.x + this.dx[i];
